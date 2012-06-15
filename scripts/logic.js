@@ -1,8 +1,3 @@
-/************************************************
-	DUCK HUNT JS 
-		by Matthew Surabian - MattSurabian.com
-		A first draft...
-**************************************************/
 var levelS = [["Game Starts...",3,2,5,3,13]];
 $(document).ready(function(){
 	//mute the sounds for debuging	
@@ -42,11 +37,11 @@ var Field={
 	playfield:"#game",
 	pieces: ["theFlash","tree","grass","theDog","sniffDog"],
 	currentLevel:0,
-	currentWave:0,
+	currentRound:0,
 	pointsPerDuck:100,
 	quackID:0,
 	sniffID:0,
-	checkWaveID:0,
+	checkRoundID:0,
 	toWait:false,
 	score:0,
 	totalKills:0,
@@ -54,13 +49,13 @@ var Field={
 	killsThisLevel:0,
 	missesThisLevel:0,
 	levelName:"",
-	shotsThisWave:0,
+	shotsThisRound:0,
 	shotsTaken:0,
 	duckID:0,
 	duckMax:0,
 	//level vars
-	levelWaves:0,
-	goldenWave:-1,
+	levelRounds:0,
+	goldenRound:-1,
 	levelDucks:0,
 	levelBullets:0,
 	levelTime:0,
@@ -69,7 +64,7 @@ var Field={
 	ducksAlive:0,
 	ducksDead:0,
 	lastBang:1,
-	clearingWave:false,
+	clearingRound:false,
 	levelInProg:false,
 	duckFlyProg:false,
 	waitingLevel:0,
@@ -84,13 +79,13 @@ var Field={
 		$(".messages").css("display","none");
 		$(".gameinfo").css("display","none");
 		$("#gameField").unbind("mousedown");
-		Field.goldenWave = Math.floor((Math.random()*Field.levelWaves));
-		if(debug>1) Field.goldenWave=0;
-		//show the introduction then load the wave
+		Field.goldenRound = Math.floor((Math.random()*Field.levelRounds));
+		if(debug>1) Field.goldenRound=0;
+		//show the introduction then load the round
 		Field.introduction(2000);
 		Field.dogSniff();
 		Field.waitingLevel = setTimeout(Field.level,6000);
-	Field.shotsThisWave = 0;
+	Field.shotsThisRound = 0;
 	},
 	
 	openingScreen: function(){
@@ -101,7 +96,7 @@ var Field={
 		Field.score+=adjust;
 		$("#scoreboard").html(addCommas(Field.score.toString()));	
 	},
-	bringIt: function(name,waves,ducks,dSpeed,bullets,time){
+	bringIt: function(name,rounds,ducks,dSpeed,bullets,time){
 		stopAll();
 		Field.totalKills=0;
 		Field.totalMisses=0;
@@ -110,10 +105,10 @@ var Field={
 		clearTimeout(Field.levelTimeID);
 		levelName = name;
 		Field.levelTime = time*1000;
-		Field.levelWaves = waves;
+		Field.levelRounds = rounds;
 		Field.levelDucks = ducks;
 		Field.levelBullets = bullets;
-		Field.currentWave = 0;
+		Field.currentRound = 0;
 		Field.setDuckSpeed(dSpeed);
 	
 		//startGame the board, then to introduction
@@ -134,14 +129,14 @@ var Field={
 		Field.missesThisLevel = 0;
 		Field.killsThisLevel = 0;
 		$("#ducksKilled").html("");
-		Field.nextWave(Field.currentWave);
+		Field.nextRound(Field.currentRound);
 				
 	},
-	nextWave: function(num){
-		console.log("In nextWave: "+num);
+	nextRound: function(num){
+		console.log("In nextRound: "+num);
 		clearInterval(Field.quackID);	
-		if(num < Field.levelWaves){
-		Field.shotsThisWave = 0;
+		if(num < Field.levelRounds){
+		Field.shotsThisRound = 0;
 		Field.clearDucks();
 		Field.bulletsD();
 		Field.ducksAlive = Field.levelDucks;
@@ -160,12 +155,12 @@ var Field={
 			}
 			$(Field.playfield).append('<div id="theDuck'+i+'" points="'+duckPoints+'" class="ducks '+duckClass+'"></div>');
 		}
-		 if(num==Field.goldenWave){ $(Field.playfield).append('<div id="theDuck'+Field.duckMax+'" points="500" class="ducks duckC"></div>'); Field.duckMax++;}
+		 if(num==Field.goldenRound){ $(Field.playfield).append('<div id="theDuck'+Field.duckMax+'" points="500" class="ducks duckC"></div>'); Field.duckMax++;}
 		console.log("After: "+Field.levelDucks);
 		console.log("New Ducks: ");
 		console.log(document.getElementsByClassName('ducks'));
 		Field.duckID = Field.duckMax;
-		$("#waves").html("WAVE "+(Field.currentWave+1)+" of "+Field.levelWaves);
+		$("#rounds").html("WAVE "+(Field.currentRound+1)+" of "+Field.levelRounds);
 
 		Field.releaseTheDucks();
 		}else{
@@ -210,18 +205,18 @@ var Field={
 				
 			
 	},
-	clearWave: function(){
+	clearRound: function(){
 		$("#gameField").unbind("mousedown");
-		if(!Field.clearingWave){
+		if(!Field.clearingRound){
 			 $("#gameField").animate({
 			 	backgroundColor: '#64b0ff'
 			 },500);
-			Field.clearingWave = true;
+			Field.clearingRound = true;
 			Field.getDucks();
-			Field.currentWave++;
-			Field.nextWave(Field.currentWave);
+			Field.currentRound++;
+			Field.nextRound(Field.currentRound);
 
-			setTimeout(function(){Field.clearingWave=false;},5000);	
+			setTimeout(function(){Field.clearingRound=false;},5000);	
 		}
 	},
 	releaseTheDucks: function(){
@@ -263,7 +258,7 @@ var Field={
 	},
 	bulletsD: function(){
 		var bulletsText = "";
-		var shotsLeft = Field.levelBullets - Field.shotsThisWave;
+		var shotsLeft = Field.levelBullets - Field.shotsThisRound;
 		
 		if(shotsLeft>15){
 			shotsLeft = 15;	
@@ -277,7 +272,7 @@ var Field={
 	},
 	gunShot: function(){
 		Field.shotsTaken++;
-		Field.shotsThisWave++;
+		Field.shotsThisRound++;
 		Field.flashScreen();
 		Field.bulletsD();	
 		if(Field.lastBang == 1){
@@ -288,7 +283,7 @@ var Field={
 		Field.lastBang = 1;
 		}
 		
-		if(Field.shotsThisWave == Field.levelBullets && Field.ducksAlive>0){
+		if(Field.shotsThisRound == Field.levelBullets && Field.ducksAlive>0){
 			//you're out of bullets and there are still beasts!
 			Field.outOfAmmo();	
 		}
@@ -342,7 +337,7 @@ var Field={
 					bottom: '-10'
 					},500,function(){
 						if(Field.ducksAlive == 0){
-							setTimeout(function(){Field.clearWave();},1000);	
+							setTimeout(function(){Field.clearRound();},1000);	
 						}	
 					});},500);
 		});	
@@ -403,7 +398,7 @@ var Field={
 						bottom: -10
 					},500,function(){
 						Field.duckFlyProg = false;
-						setTimeout(function(){Field.clearWave();},1000);	
+						setTimeout(function(){Field.clearRound();},1000);	
 					});},500);
 				
 			});	
@@ -412,7 +407,7 @@ var Field={
 	outOfAmmo: function(){
 		$(".ducks").unbind();
 		$("#gameField").unbind();	
-		Field.clearingWave=false;
+		Field.clearingRound=false;
 		setTimeout(Field.duckFly(),300);
 	},
 	duckFly: function(){
@@ -505,13 +500,13 @@ var Field={
 }
 
 function makeLevel(){
-	var LCwaves = parseInt($("#LCwaves").attr("value"));
+	var LCrounds = parseInt($("#LCrounds").attr("value"));
 	var LCducks = parseInt($("#LCducks").attr("value"));
 	var LCbullets = parseInt($("#LCbullets").attr("value"));
-	var LCwavetime = parseInt($("#LCwavetime").attr("value"));
+	var LCroundtime = parseInt($("#LCroundtime").attr("value"));
 	var LCdif = parseInt($("#LCdif").attr("value"));
 	$("#sniffDog").stop();
-	Field.bringIt("Custom Level",LCwaves,LCducks,LCdif,LCbullets,LCwavetime);		
+	Field.bringIt("Custom Level",LCrounds,LCducks,LCdif,LCbullets,LCroundtime);		
 }
 
 function tryAgain(){
